@@ -34,29 +34,30 @@ ADD ALL SONGS TO PLAYLIST
 
 import spotipy
 from auth import getAuth
+from sets import Set
 sp = spotipy.Spotify(auth=getAuth())
 
 def get_user_data_total_liked_tracks(sp):
     return sp.current_user_saved_tracks()['total']
 
 
-def create_song_dictionary(sp, total):
+def create_song_set(sp, total):
     i = 0
-    songs = {}
-    while i < 20:
-        tracks = sp.current_user_saved_tracks(50, i)
-        for c, t in enumerate(user_library['items']):
+    songs = Set([])
+    while i < total:
+        tracks = sp.current_user_saved_tracks(20, i)
+        for c, t in enumerate(tracks['items']):
             if (t['track']['album']['artists'][0]['name'] != 'Vitamin String Quartet'):
-                print(t['track']['album']['artists'][0]['name'],  '\n')
-                songs[t['track']['name']] = 'Valid'
-            else:
-                print('reeee')
+                songs.add(t['track']['name'].encode('ascii', 'ignore'))
         i += 20
     return songs
 
 user_library = sp.current_user_saved_tracks()
 total_liked_tracks = get_user_data_total_liked_tracks(sp)
-dictionary = create_song_dictionary(sp, total_liked_tracks)
+user_liked_songs = create_song_set(sp, total_liked_tracks)
+
+
+
 #print(create_song_dictionary(sp, total_liked_tracks))
 
 
