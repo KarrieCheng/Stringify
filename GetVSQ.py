@@ -30,9 +30,33 @@ ADD ALL SONGS TO PLAYLIST
 - add songs to the playlist
     - https://developer.spotify.com/documentation/web-api/reference/playlists/add-tracks-to-playlist/
 '''
-import requests
-oath2 = "Bearer BQAW6CPwqE5iwYsEiK9jAtejt-iDXqnHcTNllacRcS0r6DNsGU5jDjErYGRKlj_joHrhhYnNUaoaHp2cFGC_oAVpjn0AHTCNKIu9krbGovwV3X0ebJnPggMWVoPSW5oof-Aj_VQl6cyY99XauTWQgqiyuIIY"
-response = requests.get("https://api.spotify.com/v1/me/tracks?limit=1", headers={'Authorization': "BQAW6CPwqE5iwYsEiK9jAtejt-iDXqnHcTNllacRcS0r6DNsGU5jDjErYGRKlj_joHrhhYnNUaoaHp2cFGC_oAVpjn0AHTCNKIu9krbGovwV3X0ebJnPggMWVoPSW5oof-Aj_VQl6cyY99XauTWQgqiyuIIY"
-})
 
-print(response)
+
+import spotipy
+from auth import getAuth
+sp = spotipy.Spotify(auth=getAuth())
+
+def get_user_data_total_liked_tracks(sp):
+    return sp.current_user_saved_tracks()['total']
+
+
+def create_song_dictionary(sp, total):
+    i = 0
+    songs = {}
+    while i < 20:
+        tracks = sp.current_user_saved_tracks(50, i)
+        for c, t in enumerate(user_library['items']):
+            if (t['track']['album']['artists'][0]['name'] != 'Vitamin String Quartet'):
+                print(t['track']['album']['artists'][0]['name'],  '\n')
+                songs[t['track']['name']] = 'Valid'
+            else:
+                print('reeee')
+        i += 20
+    return songs
+
+user_library = sp.current_user_saved_tracks()
+total_liked_tracks = get_user_data_total_liked_tracks(sp)
+dictionary = create_song_dictionary(sp, total_liked_tracks)
+#print(create_song_dictionary(sp, total_liked_tracks))
+
+
