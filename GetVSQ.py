@@ -1,43 +1,8 @@
-'''
-
-Get current user's saved tracks' names
- - Create Hash Table
- - Populate the container
-    - Loop through the get_Saved_Tracks
-    - Get total number of saved tracks
-    - Loop and add until getting the number
-    https://developer.spotify.com/console/get-current-user-saved-tracks/
-
-
-Get all of VSQ's songs
-- get VSQ Id
-    - 6MERXsiRbur2oJZFgYRDKz
-- instantiate list of ids
-- get list of VSQ albums
-    - https://developer.spotify.com/console/get-artist/?id=6MERXsiRbur2oJZFgYRDKz
-    - get songs in 20 album
-        - https://developer.spotify.com/documentation/web-api/reference/albums/get-several-albums/
-        - https://developer.spotify.com/documentation/web-api/reference/albums/get-albums-tracks/
-
-
-Compare and save the VSQ ids
-    - loop through songs in albums
-        - check if name is in user song dictionary
-        - if yes, add song id to list
-
-ADD ALL SONGS TO PLAYLIST
-- create a playlist
-- add songs to the playlist
-    - https://developer.spotify.com/documentation/web-api/reference/playlists/add-tracks-to-playlist/
-'''
-
-
 import spotipy
-from auth import getAuth
+import pdb
+from auth import getAuth, getUserId
 from sets import Set
 sp = spotipy.Spotify(auth=getAuth())
-# TODO: Delete test_counter
-test_counter = 20
 
 def get_user_data_total_liked_tracks(sp):
     return sp.current_user_saved_tracks()['total']
@@ -45,8 +10,8 @@ def get_user_data_total_liked_tracks(sp):
 
 def create_song_set(sp, total):
     songs = Set([])
-    i = 0
-    while i < test_counter:
+    i = 0 
+    while i < total:
         i += 20
         tracks = sp.current_user_saved_tracks(20, i)
         for c, t in enumerate(tracks['items']):
@@ -60,30 +25,45 @@ def get_total_artist_album(artist):
 def get_artist_albums(artist):
     albums = {}
     i = 0
-    while i < test_counter:
+    while i < get_total_artist_album(artist):
         i += 20
         response = sp.artist_albums(artist,'album', 'US', 20, i)
         for c, t in enumerate(response['items']):
-            albums[t['name']] = t['id']
+            albums[t['name']] = t['uri']
     return albums
+
 def get_artist_songs(albums):
     songs = {}
-    i = 0
     for key, value in albums.iteritems():
         response = sp.album_tracks(value)
         for song in response['items']:
-            songs[song['name']] = song['id']
+            songs[song['name']] = song['uri']
     return songs
     
 
+def get_user_matched_songs(user_songs, cover_artist_songs):
+    matched_songs = Set([])
+    for song in user_songs:
+        if(song in cover_artist_songs):
+            matched_songs.add((cover_artist_songs[song].encode('ascii', 'ignore')))
+    return matched_songs
 
 
 
 cover_artist_id = '6MERXsiRbur2oJZFgYRDKz'
-# user_library = sp.current_user_saved_tracks()
-# total_liked_tracks = get_user_data_total_liked_tracks(sp)
-# user_liked_songs = create_song_set(sp, total_liked_tracks)
-get_artist_songs((get_artist_albums(cover_artist_id)))
+playlist = ''
+
+total_liked_tracks = get_user_data_total_liked_tracks(sp)
+user_liked_songs = create_song_set(sp, total_liked_tracks)
+artist_songs = get_artist_songs((get_artist_albums(cover_artist_id)))
+playlist_songs = Set([])
+if (len(user_liked_songs) < len(artist_songs)):
+    playlist_songs = get_user_matched_songs(user_liked_songs, artist_songs)
+matched_songs = list(playlist_songs)
+#TODO: Change to loop through the match songs because of the limit
+sp.user_playlist_add_tracks(getUserId(), playlist, matched_songs)
+
+
 # get_artist_albums(cover_artist_id)
 
 
