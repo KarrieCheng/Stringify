@@ -36,26 +36,55 @@ import spotipy
 from auth import getAuth
 from sets import Set
 sp = spotipy.Spotify(auth=getAuth())
+# TODO: Delete test_counter
+test_counter = 20
 
 def get_user_data_total_liked_tracks(sp):
     return sp.current_user_saved_tracks()['total']
 
 
 def create_song_set(sp, total):
-    i = 0
     songs = Set([])
-    while i < total:
+    i = 0
+    while i < test_counter:
+        i += 20
         tracks = sp.current_user_saved_tracks(20, i)
         for c, t in enumerate(tracks['items']):
             if (t['track']['album']['artists'][0]['name'] != 'Vitamin String Quartet'):
                 songs.add(t['track']['name'].encode('ascii', 'ignore'))
-        i += 20
     return songs
 
-user_library = sp.current_user_saved_tracks()
-total_liked_tracks = get_user_data_total_liked_tracks(sp)
-user_liked_songs = create_song_set(sp, total_liked_tracks)
+def get_total_artist_album(artist):
+    return sp.artist_albums(artist,'album', 'US')['total']
 
+def get_artist_albums(artist):
+    albums = {}
+    i = 0
+    while i < test_counter:
+        i += 20
+        response = sp.artist_albums(artist,'album', 'US', 20, i)
+        for c, t in enumerate(response['items']):
+            albums[t['name']] = t['id']
+    return albums
+def get_artist_songs(albums):
+    songs = {}
+    i = 0
+    for key, value in albums.iteritems():
+        response = sp.album_tracks(value)
+        for song in response['items']:
+            songs[song['name']] = song['id']
+    return songs
+    
+
+
+
+
+cover_artist_id = '6MERXsiRbur2oJZFgYRDKz'
+# user_library = sp.current_user_saved_tracks()
+# total_liked_tracks = get_user_data_total_liked_tracks(sp)
+# user_liked_songs = create_song_set(sp, total_liked_tracks)
+get_artist_songs((get_artist_albums(cover_artist_id)))
+# get_artist_albums(cover_artist_id)
 
 
 #print(create_song_dictionary(sp, total_liked_tracks))
